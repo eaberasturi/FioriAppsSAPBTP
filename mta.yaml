@@ -1,0 +1,81 @@
+_schema-version: "3.2"
+ID: demoapp5_1
+version: 0.0.2
+modules:
+- name: demoapp5-1-approuter
+  type: approuter.nodejs
+  path: demoapp5-1-approuter
+  requires:
+  - name: demoapp5_1_html_repo_runtime
+  - name: uaa_demoapp5_1
+  - name: demoapp5_1-dest-srv
+    group: destinations
+    properties:
+      forwardAuthToken: false
+      name: ui5
+      url: https://ui5.sap.com
+  parameters:
+    disk-quota: 256M
+    memory: 256M
+- name: demoapp5_1_ui_deployer
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: demoapp5_1_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - nsproject1.zip
+      name: nsproject1
+      target-path: resources/
+- name: nsproject1
+  type: html5
+  path: project1
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: demoapp5_1_html_repo_runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: uaa_demoapp5_1
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: demoapp5_1-xsuaa-service
+    service-plan: application
+- name: demoapp5_1_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
+- name: demoapp5_1-dest-srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: false
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: demoapp5_1-dest-srv
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
