@@ -10,6 +10,7 @@ sap.ui.define([
         return Controller.extend("ns.project1.controller.View1", {
             onInit: function () {
 
+                // New comment
             }
         });
     });
